@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 /* ============================================================
    DESIGN TOKENS
@@ -469,6 +470,93 @@ svg.scytale-rod .strip-band{fill:none; stroke:var(--amber); stroke-width:2; opac
 .hill-vec{display:flex; flex-direction:column; border:1px solid var(--border-soft); border-radius:3px; overflow:hidden;}
 .hill-vec div{padding:4px 10px; background:var(--surface-2); text-align:center;}
 .hill-vec div + div{border-top:1px solid var(--border-soft);}
+
+
+/* ===================== ENIGMA · MÓDULO VISUAL COMPARTIDO ===================== */
+.enig-root{display:flex; flex-direction:column; gap:16px;}
+.enig-subtabs{display:flex; gap:8px; flex-wrap:wrap; border-bottom:1px solid var(--border-soft); padding-bottom:10px; margin-bottom:4px;}
+.enig-subtab{background:var(--surface); color:var(--ink-dim); border:1px solid var(--border-soft); border-radius:var(--radius-sm); padding:8px 13px; font-size:12.5px; font-family:var(--font-mono);}
+.enig-subtab.active{color:var(--ink); background:var(--surface-2); border-color:var(--amber); box-shadow:inset 0 -2px 0 var(--amber);}
+.enig-subpanel{display:none;}
+.enig-subpanel.active{display:block; animation:panelIn .25s ease;}
+
+.enig-plaque{display:flex; align-items:center; justify-content:space-between; gap:10px; background:linear-gradient(180deg,#1c2118,#12150f); border:1px solid #3a4234; border-radius:8px; padding:9px 14px; margin-bottom:12px;}
+.enig-plaque .enig-screw{width:7px; height:7px; border-radius:50%; background:radial-gradient(circle at 35% 35%,#c9c0a0,#4a4532); box-shadow:0 0 0 1px #000;}
+.enig-plaque-mid{text-align:center; flex:1;}
+.enig-plaque-title{font-family:var(--font-mono); font-size:13px; letter-spacing:.12em; color:#f2d9a8; font-weight:700;}
+.enig-plaque-sub{font-family:var(--font-mono); font-size:9.5px; letter-spacing:.06em; color:#9aa08a; margin-top:2px;}
+
+.enig-simple{background:var(--surface-2); border-left:3px solid var(--teal); border-radius:var(--radius-sm); padding:12px 14px;}
+.enig-simple .enig-simple-label{font-family:var(--font-mono); font-size:10.5px; color:var(--teal); text-transform:uppercase; letter-spacing:.03em; margin-bottom:5px; display:block;}
+.enig-simple p{font-size:13.5px; color:var(--ink); line-height:1.6; margin:0;}
+
+/* ------ cofre de madera + chasis negro (ilustrado por CSS, sin fotografías) ------ */
+.enig-wood{
+  background-image:
+    linear-gradient(100deg, rgba(0,0,0,.08) 0%, transparent 20%, rgba(255,255,255,.05) 40%, transparent 60%),
+    repeating-linear-gradient(98deg, #8a5a2e 0 9px, #9c662f 9px 17px, #7e5128 17px 24px, #946033 24px 34px);
+  border-radius:16px; padding:20px 18px 24px; box-shadow:0 14px 34px rgba(0,0,0,.55), inset 0 0 0 1px rgba(0,0,0,.25);
+  position:relative;
+}
+.enig-wood::before{content:""; position:absolute; inset:6px; border:2px solid rgba(0,0,0,.18); border-radius:12px; pointer-events:none;}
+.enig-hinge{position:absolute; top:-10px; width:30px; height:20px; background:#15140f; border-radius:3px; box-shadow:0 2px 3px rgba(0,0,0,.6);}
+.enig-hinge.l{left:28px;} .enig-hinge.r{right:28px;}
+.enig-hinge::after{content:""; position:absolute; left:50%; top:50%; width:7px; height:7px; border-radius:50%; background:#444; transform:translate(-50%,-50%);}
+
+.enig-machine{background:linear-gradient(180deg,#242b20,#171c14); border:1px solid #3a4234; border-radius:var(--radius-md); padding:16px 14px 18px; box-shadow:inset 0 0 50px rgba(0,0,0,.55), inset 0 2px 0 rgba(255,255,255,.04);}
+.enig-machine h4.enig-h{margin:0 0 10px; font-family:var(--font-mono); font-size:10.5px; color:#b9bf9f; text-transform:uppercase; letter-spacing:.05em; text-align:center;}
+
+.enig-rotor-bay{background:#0a0b07; border:1px solid #2a2e22; border-radius:8px; padding:12px 10px 8px; margin-bottom:16px; box-shadow:inset 0 5px 14px rgba(0,0,0,.75);}
+
+.enig-board{position:relative; width:412px; max-width:100%; height:176px; margin:0 auto;}
+.enig-key, .enig-lamp, .enig-plug-key{position:absolute; width:34px; height:34px; border-radius:50%; background:#1b1f16; border:1px solid #3a3f2f; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:11.5px; color:#737a60; transition:all .12s; user-select:none;}
+.enig-key.active{background:#3a4230; color:#e9edf3; border-color:#6b7355; transform:translateY(2px) scale(.94);}
+.enig-lamp.lit{background:radial-gradient(circle at 35% 30%, #ffe9a8, #f2a93c 55%, #8a5a12); color:#2a1a00; box-shadow:0 0 14px 2px rgba(242,169,60,.75); border-color:#f2a93c; font-weight:700;}
+.enig-board-plug .enig-plug-key{width:30px; height:30px; border-radius:7px; font-size:10.5px;}
+.enig-board-label{font-size:9.5px; color:#8a9077; text-align:center; font-family:var(--font-mono); letter-spacing:.08em; margin:4px 0 2px;}
+
+.enig-rotor-row{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:16px 0;}
+.enig-rotor-unit{display:flex; flex-direction:column; align-items:center; gap:5px; background:#10120e; border:1px solid #333829; border-radius:10px; padding:10px 9px;}
+.enig-rotor-label{font-size:9.5px; color:#9aa08a; font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.02em;}
+.enig-rotor-arrow{width:38px; height:20px; background:#2a2f22; border:1px solid #454c38; color:#d8dcc8; border-radius:4px; font-size:10px; line-height:1;}
+.enig-rotor-arrow:hover{background:#3a4230;}
+.enig-drum{position:relative; width:58px; height:72px; border-radius:9px; margin:2px 0; overflow:hidden;
+  background:repeating-linear-gradient(90deg,#372b1a 0 3px,#6b5636 3px 6px,#8a7349 6px 9px,#6b5636 9px 12px);
+  background-size:200% 100%; box-shadow:inset 0 0 10px rgba(0,0,0,.65), 0 2px 5px rgba(0,0,0,.5);
+  border:1px solid #241d13; transition:background-position .4s cubic-bezier(.2,.8,.3,1);}
+.enig-drum::after{content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+  background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,.16) 46%, transparent 58%);
+  background-size:260% 260%; animation:enigShimmer 6s linear infinite;}
+@keyframes enigShimmer{0%{background-position:0% 0%;}100%{background-position:160% 160%;}}
+.enig-drum-top{position:absolute; top:-5px; left:50%; transform:translateX(-50%); width:72%; height:9px; border-radius:3px 3px 0 0; box-shadow:0 0 0 1px #000;}
+.enig-drum-window{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:34px; height:30px; background:#0b0d09; border:2px solid #1c1510; border-radius:4px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:20px; font-weight:700; color:#f2d9a8; text-shadow:0 0 6px rgba(242,217,168,.6); box-shadow:inset 0 0 6px #000;}
+.enig-drum.enig-spin .enig-drum-window{animation:enigSpinBlur .25s ease;}
+@keyframes enigSpinBlur{0%{filter:blur(2px); transform:translate(-50%,-62%);}100%{filter:blur(0); transform:translate(-50%,-50%);}}
+.enig-rotor-sub{display:flex; gap:4px; margin-top:2px;}
+.enig-mini-select{background:#1a1d15; color:#d8dcc8; border:1px solid #3a4234; border-radius:4px; font-size:10.5px; padding:3px 3px; font-family:var(--font-mono); max-width:62px;}
+
+.enig-reflector{display:flex; align-items:center; gap:8px; justify-content:center; margin-bottom:14px; flex-wrap:wrap;}
+.enig-reflector-label{font-size:10.5px; color:#9aa08a; font-family:var(--font-mono); text-transform:uppercase;}
+.enig-reflector-btn{background:#1a1d15; color:#9aa08a; border:1px solid #3a4234; border-radius:4px; padding:5px 11px; font-family:var(--font-mono); font-size:11.5px;}
+.enig-reflector-btn.active{background:var(--amber); color:#1b1304; border-color:var(--amber);}
+
+.enig-plugboard{background:#0d0f0b; border:1px solid #333829; border-radius:8px; padding:12px; margin-top:4px;}
+.enig-plug-key.used{color:#fff;}
+.enig-plug-key.pending{outline:2px solid var(--amber); outline-offset:1px;}
+.enig-plug-foot{display:flex; align-items:center; justify-content:space-between; margin-top:9px; gap:10px; flex-wrap:wrap;}
+.enig-plug-text{font-family:var(--font-mono); font-size:11.5px; color:var(--muted);}
+.enig-plug-clear{background:var(--surface-2); color:var(--ink-dim); border:1px solid var(--border-soft); border-radius:4px; padding:5px 10px; font-size:11px;}
+
+.enig-speedbar{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:14px; font-size:11.5px; color:var(--muted);}
+.enig-speedbar input[type=range]{width:100px; accent-color:var(--amber);}
+.enig-step-btn{display:none; align-items:center; gap:6px; padding:8px 0; background:var(--teal-dim); color:#fff; border:none; border-radius:var(--radius-sm); font-size:12.5px; font-weight:600; width:100%; margin-top:8px; justify-content:center;}
+.enig-step-btn.show{display:flex;}
+
+.enig-readout{display:flex; gap:7px; margin:10px 0; flex-wrap:wrap;}
+.enig-readout .enig-rd{flex:1; min-width:52px; background:var(--surface-2); border:1px solid var(--border-soft); border-radius:var(--radius-sm); padding:6px; text-align:center;}
+.enig-readout .enig-rd .lbl{font-size:9px; color:var(--muted); text-transform:uppercase; font-family:var(--font-mono);}
+.enig-readout .enig-rd .ltr{font-family:var(--font-mono); font-size:16px; color:var(--teal); font-weight:700;}
+
 </style>
 </head>
 <body>
@@ -520,6 +608,8 @@ svg.scytale-rod .strip-band{fill:none; stroke:var(--amber); stroke-width:2; opac
       <div class="rail-group">Avanzados</div>
       <button class="tab" data-tab="hill"><span class="tab-index">14</span><span class="tab-name">Hill</span></button>
       <button class="tab" data-tab="rsa"><span class="tab-index">15</span><span class="tab-name">RSA</span></button>
+      <div class="rail-group">Máquinas</div>
+      <button class="tab" data-tab="enigma"><span class="tab-index">16</span><span class="tab-name">Enigma</span></button>
     </nav>
 
     <main class="content">
@@ -1253,6 +1343,15 @@ svg.scytale-rod .strip-band{fill:none; stroke:var(--amber); stroke-width:2; opac
             <div class="step-log" id="rsa-log"></div>
           </div>
         </div>
+      </section>
+
+      <!-- ================= ENIGMA ================= -->
+      <section class="panel" id="panel-enigma">
+        <div class="panel-header">
+          <h2><span class="panel-index">16</span> Máquina Enigma</h2>
+          <p class="panel-desc">Las tres versiones históricas de la máquina Enigma, con la máquina completa dibujada a partir de fotografías reales (teclado QWERTZ, lámparas, compartimento de rotores y clavijero), generada por código, no es una fotografía. Elige una versión en las pestañas internas de abajo.</p>
+        </div>
+        <div id="enigma-root"></div>
       </section>
 
     </main>
@@ -3235,6 +3334,517 @@ document.querySelectorAll('.tab').forEach(tab => {
 /* ================================================================
    15. DESCARGA DE GUÍAS PDF (una por cifrado, embebidas en base64)
 ================================================================ */
+(function enigmaModule(){
+/* ======================================================================
+   ENIGMA · MÓDULO COMPARTIDO (motor histórico + máquina visual)
+   Este bloque es idéntico en el simulador independiente y en el
+   traductor de cifrados: ambos llaman a mountEnigmaLab(rootId).
+   ====================================================================== */
+const ENIG_ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const ENIG_ROTORS = {
+  I:   {wiring:"EKMFLGDQVZNTOWYHXUSPAIBRCJ", notch:"Q"},
+  II:  {wiring:"AJDKSIRUXBLHWTMCQGZNPYFVOE", notch:"E"},
+  III: {wiring:"BDFHJLCPRTXVZNYEIWGAKMUSQO", notch:"V"},
+  IV:  {wiring:"ESOVPZJAYQUIRHXLNFTGKDCMWB", notch:"J"},
+  V:   {wiring:"VZBRGITYUPSDNHLXAWMJQOFECK", notch:"Z"}
+};
+const ENIG_STATIC = {
+  Beta:  "LEYJVCNIXWPBQMDRTAKZGFUHOS",
+  Gamma: "FSOKANUERHMBTIYCWLQPZXVGJD"
+};
+const ENIG_REFLECTORS = {
+  A:  "EJMZALYXVBWFCRQUONTSPIKHGD",
+  B:  "YRUHQSLDPXNGOKMIEBFZCWVJAT",
+  C:  "FVPJIAOYEDRZXWGCTKUQSBNMHL",
+  Bd: "ENKQAUYWJICOPBLMDXZVFTHRGS",
+  Cd: "RDOBJNTKVEHMLFCWZAXGYIPSUQ"
+};
+const ENIG_VERSIONS = [
+  {
+    id:"v1", index:"01", years:"1930", name:"Enigma I · versión de ejército",
+    rotorPool:["I","II","III"], reflectorPool:["A","B"], maxPlug:6, fourth:false,
+    desc:"La primera versión militar en gran escala, adoptada por el ejército alemán. Tres rotores elegidos entre un juego de tres, un reflector fijo y un panel de conexiones de hasta 6 pares de letras.",
+    simple:"Imagina tres ruedas con el abecedario mezclado por dentro, puestas una al lado de la otra. Cada vez que escribes una letra, la primera rueda gira un poco, así que si escribes la misma letra dos veces seguidas, puede salir cifrada de dos formas distintas. Esto, en 1930, parecía imposible de adivinar sin tener la máquina.",
+    theory:"<p>Scherbius patentó Enigma en 1918 como una versión electromecánica del disco de sustitución: cada tecla pulsada hace avanzar un rotor y cambia el alfabeto de cifrado, así que la misma letra nunca se cifra siempre igual.</p><p>Con 3 rotores elegibles entre 3 (6 órdenes posibles), 26 posiciones por rotor y un panel de hasta 6 conexiones, el número de configuraciones superaba los 10 trillones — imposible de probar a mano, incluso para decenas de personas trabajando una tarde entera.</p>",
+    stat:"Más de 10 trillones de configuraciones posibles"
+  },
+  {
+    id:"v2", index:"02", years:"1938", name:"Enigma I · versión ampliada",
+    rotorPool:["I","II","III","IV","V"], reflectorPool:["B","C"], maxPlug:10, fourth:false,
+    desc:"En diciembre de 1938, ante la inminente guerra, el ejército alemán amplió el juego de rotores disponibles de 3 a 5 (eligiendo 3 de ellos, con 60 órdenes posibles) y el panel de conexiones de 6 a 10 pares.",
+    simple:"Es la misma idea que la versión anterior, pero ahora hay 5 ruedas distintas para elegir y solo usas 3 a la vez, así que hay muchas más combinaciones posibles de qué rueda va en cada hueco. También se pueden conectar más pares de letras antes de entrar a las ruedas, como enchufar más cables cruzados.",
+    theory:"<p>Esta ampliación fue la respuesta alemana al trabajo de los criptoanalistas polacos, que llevaban años leyendo los mensajes de Enigma gracias a la repetición de la clave al inicio de cada mensaje.</p><p>Con 5 rotores posibles para 3 huecos (60 órdenes), 26³ posiciones y un panel de 10 conexiones, la cantidad de configuraciones superó los 150 trillones, obligando a los polacos — y después a los británicos en Bletchley Park — a rediseñar por completo su método de ataque.</p>",
+    stat:"Más de 150 trillones de configuraciones posibles"
+  },
+  {
+    id:"v3", index:"03", years:"1942", name:"Enigma Naval M4 (U-Boot)",
+    rotorPool:["I","II","III","IV","V"], reflectorPool:["Bd","Cd"], maxPlug:10, fourth:true,
+    desc:"La versión usada en los submarinos (U-Boot) de la Kriegsmarine. Añade un cuarto rotor fino y fijo (que no gira durante el cifrado) junto a un reflector más delgado, multiplicando aún más las posibilidades.",
+    simple:"Los submarinos necesitaban todavía más seguridad, así que a las tres ruedas de siempre le añadieron una cuarta rueda extra que no gira: se queda quieta en la posición que tú elijas, como un ajuste fijo más. Es un pequeño extra que complicó mucho la vida a quienes intentaban descifrar sus mensajes.",
+    theory:"<p>El cuarto rotor (Beta o Gamma) se coloca a la izquierda de los tres rotores normales y no avanza con cada letra: su posición se fija manualmente al configurar la máquina del día, igual que un reflector ajustable.</p><p>Esta versión mantuvo a los submarinos alemanes comunicándose con una capa extra de seguridad durante buena parte de 1942, obligando a los Aliados a construir bombés de cuatro rotores en Bletchley Park y en Estados Unidos para seguir leyendo sus mensajes.</p>",
+    stat:"Multiplica por 2 las configuraciones de la versión ampliada (elección de rotor fino Beta/Gamma)"
+  }
+];
+const ENIG_SPEED_LEVELS = [
+  {label:"Instantánea", ms:0},
+  {label:"Rápida", ms:120},
+  {label:"Media", ms:380},
+  {label:"Lenta", ms:800}
+];
+
+function enigMod(n,m){ return ((n % m) + m) % m; }
+
+/* ---------- motor de cifrado (idéntico a la máquina real) ---------- */
+function enigRotorForward(r, idx){
+  const shifted = enigMod(idx + r.pos - r.ring, 26);
+  const wired = ENIG_ABC.indexOf(ENIG_ROTORS[r.type].wiring[shifted]);
+  return enigMod(wired - r.pos + r.ring, 26);
+}
+function enigRotorBackward(r, idx){
+  const shifted = enigMod(idx + r.pos - r.ring, 26);
+  const letter = ENIG_ABC[shifted];
+  const wired = ENIG_ROTORS[r.type].wiring.indexOf(letter);
+  return enigMod(wired - r.pos + r.ring, 26);
+}
+function enigStaticForward(idx, wiring, pos){
+  const shifted = enigMod(idx + pos, 26);
+  const wired = ENIG_ABC.indexOf(wiring[shifted]);
+  return enigMod(wired - pos, 26);
+}
+function enigStaticBackward(idx, wiring, pos){
+  const shifted = enigMod(idx + pos, 26);
+  const letter = ENIG_ABC[shifted];
+  const wired = wiring.indexOf(letter);
+  return enigMod(wired - pos, 26);
+}
+function enigStepRotors(rotors){
+  const rightAtNotch = rotors[2].pos === ENIG_ABC.indexOf(ENIG_ROTORS[rotors[2].type].notch);
+  const middleAtNotch = rotors[1].pos === ENIG_ABC.indexOf(ENIG_ROTORS[rotors[1].type].notch);
+  if(middleAtNotch){
+    rotors[0].pos = enigMod(rotors[0].pos+1,26);
+    rotors[1].pos = enigMod(rotors[1].pos+1,26);
+    rotors[2].pos = enigMod(rotors[2].pos+1,26);
+  } else if(rightAtNotch){
+    rotors[1].pos = enigMod(rotors[1].pos+1,26);
+    rotors[2].pos = enigMod(rotors[2].pos+1,26);
+  } else {
+    rotors[2].pos = enigMod(rotors[2].pos+1,26);
+  }
+}
+function enigBuildPlugMap(pairs){
+  const map = ENIG_ABC.split("").map((_,i)=>i);
+  for(const [a,b] of pairs){ map[a]=b; map[b]=a; }
+  return map;
+}
+function enigEncryptChar(c, rotors, reflectorCode, plugPairs, fourth){
+  enigStepRotors(rotors);
+  let idx = ENIG_ABC.indexOf(c);
+  if(idx === -1) return null;
+  const plug = enigBuildPlugMap(plugPairs);
+  idx = plug[idx];
+  for(let i=2;i>=0;i--) idx = enigRotorForward(rotors[i], idx);
+  if(fourth) idx = enigStaticForward(idx, ENIG_STATIC[fourth.type], fourth.pos);
+  idx = ENIG_ABC.indexOf(ENIG_REFLECTORS[reflectorCode][idx]);
+  if(fourth) idx = enigStaticBackward(idx, ENIG_STATIC[fourth.type], fourth.pos);
+  for(let i=0;i<3;i++) idx = enigRotorBackward(rotors[i], idx);
+  idx = plug[idx];
+  return ENIG_ABC[idx];
+}
+function enigSoloLetras(s){ return s.toUpperCase().replace(/[^A-ZÑ]/g,"").replace(/Ñ/g,"N"); }
+
+/* ---------- estado por versión ---------- */
+function enigInitState(v){
+  return {
+    rotors: [0,1,2].map(i=>({type:v.rotorPool[i % v.rotorPool.length], ring:0, pos:0})),
+    fourth: v.fourth ? {type:"Beta", pos:0} : null,
+    reflector: v.reflectorPool[0],
+    plug: [],
+    speedIndex: 2,
+    stepMode: false
+  };
+}
+
+/* colores reutilizables por tipo de rotor (una paleta fija, no una imagen por combinación) */
+const ENIG_TYPE_COLOR = { I:"#c9c0a0", II:"#e0b84a", III:"#c97a3d", IV:"#5b8bd6", V:"#4caf6b", Beta:"#a06bd6", Gamma:"#d65b5b" };
+function rotorCountLabel(v){ return v.fourth ? "4 rotores (3 giratorios + 1 fino fijo)" : "3 rotores giratorios"; }
+
+/* ---------- disposición QWERTZ real de la máquina (teclado/lámparas/clavijero) ---------- */
+const ENIG_QWERTZ_ROWS = [
+  ["Q","W","E","R","T","Z","U","I","O"],
+  ["A","S","D","F","G","H","J","K"],
+  ["P","Y","X","C","V","B","N","M","L"]
+];
+const ENIG_ROW_OFFSET = [0, 22, 11];
+const ENIG_UNIT = 44, ENIG_ROW_H = 46;
+function enigKeyPos(letter){
+  for(let r=0;r<3;r++){
+    const c = ENIG_QWERTZ_ROWS[r].indexOf(letter);
+    if(c>=0) return { x: ENIG_ROW_OFFSET[r] + c*ENIG_UNIT, y: r*ENIG_ROW_H };
+  }
+  return {x:0,y:0};
+}
+function enigBoardHTML(prefix, kind){
+  const cls = kind==="key" ? "enig-key" : kind==="lamp" ? "enig-lamp" : "enig-plug-key";
+  const idPart = kind==="plug" ? "plug" : kind;
+  let inner = "";
+  for(let i=0;i<26;i++){
+    const letter = ENIG_ABC[i];
+    const pos = enigKeyPos(letter);
+    inner += `<div class="${cls}" id="${prefix}-${idPart}-${i}" data-idx="${i}" style="left:${pos.x}px; top:${pos.y}px;">${letter}</div>`;
+  }
+  return `<div class="enig-board enig-board-${kind}">${inner}</div>`;
+}
+
+/* ---------- construcción visual ---------- */
+function enigBuildPanel(v){
+  const rotorLabels = ["Izquierdo","Medio","Derecho","Fino (fijo)"];
+  let rotorUnits = "";
+  for(let i=0;i<3;i++){
+    rotorUnits += `
+      <div class="enig-rotor-unit" data-rotor="${i}">
+        <span class="enig-rotor-label">${rotorLabels[i]}</span>
+        <button type="button" class="enig-rotor-arrow" data-act="up" data-rotor="${i}">&#9650;</button>
+        <div class="enig-drum" id="${v.id}-drum-${i}">
+          <div class="enig-drum-top" id="${v.id}-top-${i}"></div>
+          <div class="enig-drum-window" id="${v.id}-rw-${i}">A</div>
+        </div>
+        <button type="button" class="enig-rotor-arrow" data-act="down" data-rotor="${i}">&#9660;</button>
+        <div class="enig-rotor-sub">
+          <select class="enig-mini-select" id="${v.id}-type-${i}" data-rotor="${i}" data-field="type">
+            ${v.rotorPool.map(t=>`<option value="${t}">${t}</option>`).join("")}
+          </select>
+          <select class="enig-mini-select" id="${v.id}-ring-${i}" data-rotor="${i}" data-field="ring">
+            ${ENIG_ABC.split("").map((l,li)=>`<option value="${li}">${l}</option>`).join("")}
+          </select>
+        </div>
+      </div>`;
+  }
+  if(v.fourth){
+    rotorUnits += `
+      <div class="enig-rotor-unit" data-rotor="3">
+        <span class="enig-rotor-label">${rotorLabels[3]}</span>
+        <button type="button" class="enig-rotor-arrow" data-act="up" data-rotor="3">&#9650;</button>
+        <div class="enig-drum" id="${v.id}-drum-3" style="width:46px;">
+          <div class="enig-drum-top" id="${v.id}-top-3"></div>
+          <div class="enig-drum-window" id="${v.id}-rw-3" style="width:28px;">A</div>
+        </div>
+        <button type="button" class="enig-rotor-arrow" data-act="down" data-rotor="3">&#9660;</button>
+        <div class="enig-rotor-sub">
+          <select class="enig-mini-select" id="${v.id}-type-3" data-rotor="3" data-field="type4">
+            <option value="Beta">Beta</option><option value="Gamma">Gamma</option>
+          </select>
+        </div>
+      </div>`;
+  }
+
+  const keys = enigBoardHTML(v.id, "key");
+  const lamps = enigBoardHTML(v.id, "lamp");
+  const plugKeys = enigBoardHTML(v.id, "plug");
+  const reflectorBtns = v.reflectorPool.map(code=>`<button type="button" class="enig-reflector-btn" data-code="${code}">${code}</button>`).join("");
+
+  return `
+    <div class="panel-header">
+      <h2><span class="panel-index">${v.index}</span> ${v.name}</h2>
+      <p class="panel-desc">${v.desc}</p>
+    </div>
+    <div class="enig-simple" style="margin-bottom:14px;">
+      <span class="enig-simple-label">&#128161; En palabras simples</span>
+      <p>${v.simple}</p>
+    </div>
+
+    <details class="accordion">
+      <summary>Cómo funcionaba esta versión (explicación más técnica)</summary>
+      <div class="accordion-body">${v.theory}</div>
+    </details>
+    <details class="accordion">
+      <summary>¿Qué significa cada ajuste? (glosario)</summary>
+      <div class="accordion-body glossary">
+        <dl>
+          <dt>Rotor</dt><dd>Una rueda con las 26 letras conectadas por dentro de forma mezclada. Gíralo con las flechas de arriba/abajo de su ventanilla.</dd>
+          <dt>Anillo</dt><dd>Gira la rueda impresa respecto al cableado interno; cambia el momento en que un rotor hace girar al siguiente.</dd>
+          <dt>Reflector</dt><dd>Pieza fija que rebota la señal de vuelta por los rotores. Por eso la misma configuración sirve para cifrar y descifrar.</dd>
+          <dt>Panel de conexiones</dt><dd>Toca dos letras del panel inferior para intercambiarlas, como enchufar un cable cruzado entre dos letras del teclado.</dd>
+        </dl>
+      </div>
+    </details>
+
+    <div class="enig-wood" role="group" aria-label="Máquina Enigma interactiva">
+      <div class="enig-hinge l"></div><div class="enig-hinge r"></div>
+      <div class="enig-machine">
+        <div class="enig-plaque">
+          <span class="enig-screw"></span>
+          <div class="enig-plaque-mid">
+            <div class="enig-plaque-title">ENIGMA &middot; ${v.name.toUpperCase()}</div>
+            <div class="enig-plaque-sub">${v.years} &middot; ${rotorCountLabel(v)} &middot; configuración seleccionada en vivo abajo</div>
+          </div>
+          <span class="enig-screw"></span>
+        </div>
+
+        <h4 class="enig-h">Compartimento de rotores (gírarlos con las flechas)</h4>
+        <div class="enig-rotor-bay">
+          <div class="enig-rotor-row">${rotorUnits}</div>
+        </div>
+
+        <h4 class="enig-h">Lámparas (letra cifrada que se enciende)</h4>
+        ${lamps}
+
+        <h4 class="enig-h" style="margin-top:10px;">Teclado (letra que escribes)</h4>
+        ${keys}
+
+        <div class="enig-reflector">
+          <span class="enig-reflector-label">Reflector</span>
+          ${reflectorBtns}
+        </div>
+      </div><!-- /.enig-machine -->
+
+      <div class="enig-plugboard">
+        <div class="enig-board-label">Panel de conexiones — toca hasta ${v.maxPlug} pares de letras</div>
+        ${plugKeys}
+        <div class="enig-plug-foot">
+          <span class="enig-plug-text" id="${v.id}-plug-text">Sin conexiones</span>
+          <button type="button" class="enig-plug-clear" id="${v.id}-plug-clear">Limpiar conexiones</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h3 id="${v.id}-msg-h">Tu mensaje</h3>
+      <label for="${v.id}-input" class="visually-hidden">Escribe el mensaje a cifrar o descifrar</label>
+      <textarea id="${v.id}-input" placeholder="ESCRIBE AQUI TU MENSAJE" aria-labelledby="${v.id}-msg-h"></textarea>
+      <button class="run-btn" id="${v.id}-run">Cifrar / Descifrar</button>
+      <button class="enig-step-btn" id="${v.id}-step-btn">Siguiente letra &rarr;</button>
+      <p class="hint">Usa el mismo botón para las dos cosas: con la misma configuración, si metes el texto cifrado obtienes el original.</p>
+
+      <div class="enig-speedbar">
+        <label for="${v.id}-speed">Velocidad</label>
+        <input type="range" id="${v.id}-speed" min="0" max="3" value="2" step="1">
+        <span id="${v.id}-speed-label">Media</span>
+        <label><input type="checkbox" id="${v.id}-stepmode"> Paso a paso</label>
+      </div>
+
+      <h3 style="margin-top:16px;">Resultado</h3>
+      <div class="output" id="${v.id}-output" role="status" aria-live="polite"></div>
+
+      <h3 style="margin-top:14px;">Posición actual de cada rotor</h3>
+      <div class="enig-readout" id="${v.id}-dials" aria-live="polite"></div>
+
+      <div class="formula-ref">
+        <div class="formula-ref-title">Seguridad de esta versión</div>
+        <div class="formula-ref-row"><span class="fr-label">Combinaciones posibles</span><code>${v.stat}</code></div>
+      </div>
+
+      <button class="panel-dl" id="${v.id}-pdf-btn" type="button">&#128196; Descargar guía en PDF, en lenguaje sencillo</button>
+    </div>
+  `;
+}
+
+/* ---------- montaje e interacción ---------- */
+function mountEnigmaLab(rootId){
+  const root = document.getElementById(rootId);
+  if(!root) return;
+  root.classList.add("enig-root");
+
+  const subtabs = document.createElement("div");
+  subtabs.className = "enig-subtabs";
+  root.appendChild(subtabs);
+
+  const states = {};
+
+  ENIG_VERSIONS.forEach((v,i)=>{
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "enig-subtab" + (i===0 ? " active" : "");
+    btn.textContent = `${v.index} · ${v.years} · ${v.name}`;
+    btn.addEventListener("click", ()=>{
+      subtabs.querySelectorAll(".enig-subtab").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      root.querySelectorAll(".enig-subpanel").forEach(p=>p.classList.remove("active"));
+      document.getElementById("enig-panel-"+v.id).classList.add("active");
+    });
+    subtabs.appendChild(btn);
+
+    const panel = document.createElement("section");
+    panel.className = "enig-subpanel" + (i===0 ? " active" : "");
+    panel.id = "enig-panel-"+v.id;
+    panel.innerHTML = enigBuildPanel(v);
+    root.appendChild(panel);
+
+    states[v.id] = enigInitState(v);
+    enigWireVersion(v, states[v.id]);
+  });
+}
+
+function enigWireVersion(v, state){
+  const id = v.id;
+  const $ = (sel)=>document.getElementById(sel);
+
+  function paintDrum(i, type, pos, spin){
+    const drum = $(`${id}-drum-${i}`);
+    const top = $(`${id}-top-${i}`);
+    if(top) top.style.background = ENIG_TYPE_COLOR[type] || "#999";
+    if(drum){
+      drum.style.backgroundPosition = (pos/26*400) + "% 0";
+      if(spin){ drum.classList.remove("enig-spin"); void drum.offsetWidth; drum.classList.add("enig-spin"); }
+    }
+  }
+  function syncWindows(spin){
+    for(let i=0;i<3;i++){
+      $(`${id}-rw-${i}`).textContent = ENIG_ABC[state.rotors[i].pos];
+      paintDrum(i, state.rotors[i].type, state.rotors[i].pos, spin);
+    }
+    if(v.fourth){
+      $(`${id}-rw-3`).textContent = ENIG_ABC[state.fourth.pos];
+      paintDrum(3, state.fourth.type, state.fourth.pos, spin);
+    }
+  }
+  function syncPlugUI(){
+    const used = new Set();
+    state.plug.forEach(([a,b])=>{ used.add(a); used.add(b); });
+    for(let i=0;i<26;i++){
+      const el = $(`${id}-plug-${i}`);
+      el.classList.toggle("used", used.has(i));
+      el.style.background = used.has(i) ? pairColor(i) : "";
+      el.style.borderColor = used.has(i) ? pairColor(i) : "";
+    }
+    const text = state.plug.map(([a,b])=>ENIG_ABC[a]+ENIG_ABC[b]).join(" ");
+    $(`${id}-plug-text`).textContent = text || "Sin conexiones";
+  }
+  function pairColor(letterIdx){
+    const pairIdx = state.plug.findIndex(([a,b])=>a===letterIdx||b===letterIdx);
+    const palette = ["#f2a93c","#35b3a3","#e2574c","#6b8cff","#c77dff","#4caf50","#ff8a65","#9ccc65","#4dd0e1","#ba68c8"];
+    return palette[pairIdx % palette.length];
+  }
+
+  document.querySelectorAll(`.enig-rotor-arrow[data-rotor]`).forEach(btn=>{
+    if(!btn.closest("#enig-panel-"+id)) return;
+    btn.addEventListener("click", ()=>{
+      const i = Number(btn.dataset.rotor);
+      const dir = btn.dataset.act === "up" ? 1 : -1;
+      if(i<3){ state.rotors[i].pos = enigMod(state.rotors[i].pos + dir, 26); }
+      else if(state.fourth){ state.fourth.pos = enigMod(state.fourth.pos + dir, 26); }
+      syncWindows(true);
+    });
+  });
+  document.querySelectorAll(`#enig-panel-${id} .enig-mini-select`).forEach(sel=>{
+    sel.addEventListener("change", ()=>{
+      const i = Number(sel.dataset.rotor);
+      const field = sel.dataset.field;
+      if(field === "type") state.rotors[i].type = sel.value;
+      else if(field === "ring") state.rotors[i].ring = Number(sel.value);
+      else if(field === "type4" && state.fourth) state.fourth.type = sel.value;
+      syncWindows(true);
+    });
+  });
+  document.querySelectorAll(`#enig-panel-${id} .enig-reflector-btn`).forEach((btn,idx)=>{
+    if(idx===0) btn.classList.add("active");
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(`#enig-panel-${id} .enig-reflector-btn`).forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      state.reflector = btn.dataset.code;
+    });
+  });
+  for(let i=0;i<26;i++){
+    const key = $(`${id}-plug-${i}`);
+    key.addEventListener("click", ()=>{
+      const existingPairIdx = state.plug.findIndex(([a,b])=>a===i||b===i);
+      if(existingPairIdx >= 0){ state.plug.splice(existingPairIdx,1); syncPlugUI(); return; }
+      const pendingEl = document.querySelector(`#enig-panel-${id} .enig-plug-key.pending`);
+      if(!pendingEl){ key.classList.add("pending"); return; }
+      const pendingIdx = Number(pendingEl.dataset.idx);
+      pendingEl.classList.remove("pending");
+      if(pendingIdx === i) return;
+      if(state.plug.length >= v.maxPlug) return;
+      state.plug.push([pendingIdx, i]);
+      syncPlugUI();
+    });
+  }
+  $(`${id}-plug-clear`).addEventListener("click", ()=>{ state.plug = []; syncPlugUI(); });
+
+  const speedSlider = $(`${id}-speed`), speedLabel = $(`${id}-speed-label`), stepToggle = $(`${id}-stepmode`);
+  speedSlider.addEventListener("input", ()=>{ state.speedIndex = Number(speedSlider.value); speedLabel.textContent = ENIG_SPEED_LEVELS[state.speedIndex].label; });
+  stepToggle.addEventListener("change", ()=>{ state.stepMode = stepToggle.checked; speedSlider.disabled = state.stepMode; speedSlider.style.opacity = state.stepMode ? .4 : 1; });
+
+  const stepBtn = $(`${id}-step-btn`);
+  let pendingStep = null;
+  stepBtn.addEventListener("click", ()=>{ if(pendingStep){ const r=pendingStep; pendingStep=null; r(); } });
+  function tick(){ return new Promise(res=>setTimeout(res, ENIG_SPEED_LEVELS[state.speedIndex].ms)); }
+  function waitStep(){ stepBtn.classList.add("show"); return new Promise(res=>{ pendingStep = ()=>{ stepBtn.classList.remove("show"); res(); }; }); }
+
+  function lightLamp(i){
+    document.querySelectorAll(`#enig-panel-${id} .enig-lamp.lit`).forEach(el=>el.classList.remove("lit"));
+    document.querySelectorAll(`#enig-panel-${id} .enig-key.active`).forEach(el=>el.classList.remove("active"));
+    if(i!==null) $(`${id}-lamp-${i}`).classList.add("lit");
+  }
+  function pressKey(i){ $(`${id}-key-${i}`).classList.add("active"); }
+
+  const run = $(`${id}-run`);
+  run.addEventListener("click", async ()=>{
+    const rotors = state.rotors.map(r=>({type:r.type, ring:r.ring, pos:r.pos}));
+    const fourth = state.fourth ? {type:state.fourth.type, pos:state.fourth.pos} : null;
+    const texto = enigSoloLetras($(`${id}-input`).value);
+    const outputEl = $(`${id}-output`);
+    const dials = $(`${id}-dials`);
+    outputEl.textContent = "";
+    run.disabled = true;
+    run.textContent = state.stepMode ? "Esperando..." : "Procesando...";
+    let out = "";
+    for(let i=0;i<texto.length;i++){
+      const c = texto[i];
+      const inIdx = ENIG_ABC.indexOf(c);
+      pressKey(inIdx);
+      const r = enigEncryptChar(c, rotors, state.reflector, state.plug, fourth);
+      out += r;
+      outputEl.textContent = out;
+      lightLamp(ENIG_ABC.indexOf(r));
+      for(let ri=0;ri<3;ri++) paintDrum(ri, rotors[ri].type, rotors[ri].pos, true);
+      if(fourth) paintDrum(3, fourth.type, fourth.pos, false);
+      dials.innerHTML = rotors.map((rt,idx)=>`<div class="enig-rd"><div class="lbl">R${idx+1}</div><div class="ltr">${ENIG_ABC[rt.pos]}</div></div>`).join("")
+        + (fourth ? `<div class="enig-rd"><div class="lbl">Fino</div><div class="ltr">${ENIG_ABC[fourth.pos]}</div></div>` : "");
+      for(let ri=0;ri<3;ri++) $(`${id}-rw-${ri}`).textContent = ENIG_ABC[rotors[ri].pos];
+      if(fourth) $(`${id}-rw-3`).textContent = ENIG_ABC[fourth.pos];
+      if(i < texto.length - 1){
+        if(state.stepMode){ run.textContent = "Esperando..."; await waitStep(); }
+        else await tick();
+      }
+    }
+    lightLamp(null);
+    syncWindows(true);
+    run.disabled = false;
+    run.textContent = "Cifrar / Descifrar";
+  });
+
+  $(`${id}-pdf-btn`).addEventListener("click", ()=>enigGeneratePDF(v));
+  syncWindows(false);
+  syncPlugUI();
+}
+
+function enigGeneratePDF(v){
+  if(!window.jspdf){ alert("El generador de PDF necesita conexión a internet la primera vez (carga jsPDF)."); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:"mm", format:"a4"});
+  const marginL = 18, pageW = 210, usableW = pageW - 36, pageH = 287;
+  let y = 20;
+  function title(t,size=17){ doc.setFont("helvetica","bold"); doc.setFontSize(size); doc.setTextColor(20,20,20); doc.text(t,marginL,y); y+=size*0.5+5; }
+  function h2(t){ if(y>pageH-20){doc.addPage();y=20;} doc.setFont("helvetica","bold"); doc.setFontSize(13); doc.setTextColor(30,30,30); doc.text(t,marginL,y); y+=8; }
+  function para(t){
+    doc.setFont("helvetica","normal"); doc.setFontSize(11); doc.setTextColor(40,40,40);
+    const lines = doc.splitTextToSize(t, usableW);
+    for(const line of lines){ if(y>pageH-15){doc.addPage();y=20;} doc.text(line,marginL,y); y+=5.7; }
+    y+=4;
+  }
+  const theoryText = v.theory.replace(/<\/?p>/g," ").replace(/\s+/g," ").trim();
+  title(`Enigma — ${v.name} (${v.years})`);
+  para(v.desc);
+  h2("Funcionamiento de esta versión");
+  para(theoryText);
+  h2("Seguridad estimada");
+  para(v.stat + ". Todas las versiones de Enigma acabaron siendo descifradas: primero por Marian Rejewski, explotando la repetición de la clave al inicio de cada mensaje; después por Alan Turing en Bletchley Park, usando fragmentos de texto conocido y el hecho de que el reflector nunca cifra una letra como ella misma.");
+  doc.save(`enigma-${v.id}.pdf`);
+}
+
+mountEnigmaLab('enigma-root');
+})();
+
 (function pdfDownloadsModule() {
   function b64ToBlob(b64, mime) {
     const bytes = atob(b64);
